@@ -1,0 +1,222 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Attendance Reports - School Management System{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">Attendance Reports</h1>
+        <a href="{% url 'attendance_sessions' %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
+            Back to Sessions
+        </a>
+    </div>
+    
+    <!-- Filters -->
+    <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+        <form method="get" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="grade" class="block text-sm font-medium text-gray-700 mb-1">Grade</label>
+                    <select id="grade" name="grade" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                        <option value="">All Grades</option>
+                        {% for grade in grades %}
+                            <option value="{{ grade.id }}" {% if selected_grade == grade.id|stringformat:"i" %}selected{% endif %}>
+                                {{ grade.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                    <input type="date" id="start_date" name="start_date" value="{{ start_date }}" 
+                           class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                </div>
+                
+                <div>
+                    <label for="end_date" class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                    <input type="date" id="end_date" name="end_date" value="{{ end_date }}" 
+                           class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                </div>
+            </div>
+            
+            <div class="flex justify-end space-x-2">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Generate Report
+                </button>
+                <a href="{% url 'attendance_report' %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
+                    Reset Filters
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Statistics -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div class="bg-blue-600 text-white p-4">
+            <h2 class="text-lg font-semibold">Attendance Statistics</h2>
+        </div>
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+                <div class="bg-gray-100 p-4 rounded-lg text-center">
+                    <h3 class="text-sm font-medium text-gray-500">Total Records</h3>
+                    <p class="mt-1 text-3xl font-semibold text-gray-900">{{ total_count }}</p>
+                </div>
+                
+                <div class="bg-green-100 p-4 rounded-lg text-center">
+                    <h3 class="text-sm font-medium text-gray-500">Present</h3>
+                    <p class="mt-1 text-3xl font-semibold text-green-700">{{ present_count }}</p>
+                    <p class="text-sm text-green-600">{{ present_percent|floatformat:1 }}%</p>
+                </div>
+                
+                <div class="bg-red-100 p-4 rounded-lg text-center">
+                    <h3 class="text-sm font-medium text-gray-500">Absent</h3>
+                    <p class="mt-1 text-3xl font-semibold text-red-700">{{ absent_count }}</p>
+                    <p class="text-sm text-red-600">{{ absent_percent|floatformat:1 }}%</p>
+                </div>
+                
+                <div class="bg-yellow-100 p-4 rounded-lg text-center">
+                    <h3 class="text-sm font-medium text-gray-500">Late</h3>
+                    <p class="mt-1 text-3xl font-semibold text-yellow-700">{{ late_count }}</p>
+                    <p class="text-sm text-yellow-600">{{ late_percent|floatformat:1 }}%</p>
+                </div>
+                
+                <div class="bg-blue-100 p-4 rounded-lg text-center">
+                    <h3 class="text-sm font-medium text-gray-500">Excused</h3>
+                    <p class="mt-1 text-3xl font-semibold text-blue-700">{{ excused_count }}</p>
+                    <p class="text-sm text-blue-600">{{ excused_percent|floatformat:1 }}%</p>
+                </div>
+            </div>
+            
+            <!-- Visualization -->
+            <div class="mb-6">
+                <h3 class="text-lg font-medium text-gray-700 mb-2">Attendance Distribution</h3>
+                <div class="w-full bg-gray-200 rounded-full h-4">
+                    <div class="flex rounded-full h-4 overflow-hidden">
+                        <div class="bg-green-500 h-4" style="width: {{ present_percent }}%"></div>
+                        <div class="bg-yellow-500 h-4" style="width: {{ late_percent }}%"></div>
+                        <div class="bg-blue-500 h-4" style="width: {{ excused_percent }}%"></div>
+                        <div class="bg-red-500 h-4" style="width: {{ absent_percent }}%"></div>
+                    </div>
+                </div>
+                <div class="flex justify-center mt-2 text-sm">
+                    <div class="flex items-center mr-4">
+                        <div class="w-3 h-3 bg-green-500 rounded-full mr-1"></div>
+                        <span>Present</span>
+                    </div>
+                    <div class="flex items-center mr-4">
+                        <div class="w-3 h-3 bg-yellow-500 rounded-full mr-1"></div>
+                        <span>Late</span>
+                    </div>
+                    <div class="flex items-center mr-4">
+                        <div class="w-3 h-3 bg-blue-500 rounded-full mr-1"></div>
+                        <span>Excused</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 bg-red-500 rounded-full mr-1"></div>
+                        <span>Absent</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Export Options -->
+            <div class="flex justify-end space-x-2">
+                <button type="button" class="bg-gray-800 hover:bg-gray-900 text-white font-bold py-2 px-4 rounded flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    Export as PDF
+                </button>
+                <button type="button" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    Export as CSV
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Attendance Records -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="bg-blue-600 text-white p-4">
+            <h2 class="text-lg font-semibold">Attendance Records</h2>
+        </div>
+        
+        {% if attendances %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Date
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Student ID
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Name
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Grade
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Time
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for attendance in attendances %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ attendance.session.date|date:"M d, Y" }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {{ attendance.pupil.student_id }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <a href="{% url 'pupil_detail' attendance.pupil.id %}" class="text-blue-600 hover:text-blue-900">
+                                        {{ attendance.pupil.get_full_name }}
+                                    </a>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ attendance.session.grade.name }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        {% if attendance.status == 'PRESENT' %}bg-green-100 text-green-800
+                                        {% elif attendance.status == 'ABSENT' %}bg-red-100 text-red-800
+                                        {% elif attendance.status == 'LATE' %}bg-yellow-100 text-yellow-800
+                                        {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                        {{ attendance.get_status_display }}
+                                        {% if attendance.status == 'LATE' and attendance.minutes_late %}
+                                            ({{ attendance.minutes_late }} min)
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ attendance.timestamp|date:"H:i" }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if attendances.count >= 100 %}
+                <div class="p-4 bg-yellow-50 text-yellow-700 text-center">
+                    <p>Showing first 100 records. Please use filters to narrow down results.</p>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-8">
+                <p class="text-gray-500">No attendance records found matching your criteria.</p>
+                <a href="{% url 'attendance_report' %}" class="mt-2 inline-block text-blue-600 hover:text-blue-800">Clear filters</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

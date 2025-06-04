@@ -1,0 +1,167 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Attendance Sessions - School Management System{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">Attendance Sessions</h1>
+        <a href="{% url 'create_attendance_session' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            Create New Session
+        </a>
+    </div>
+    
+    <!-- Filters -->
+    <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+        <form method="get" class="flex flex-col md:flex-row md:items-end space-y-4 md:space-y-0 md:space-x-4">
+            <div class="flex-grow">
+                <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                <input type="date" id="date" name="date" value="{{ selected_date }}" 
+                       class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md">
+            </div>
+            
+            <div class="w-full md:w-1/4">
+                <label for="grade" class="block text-sm font-medium text-gray-700 mb-1">Grade</label>
+                <select id="grade" name="grade" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                    <option value="">All Grades</option>
+                    {% for grade in grades %}
+                        <option value="{{ grade.id }}" {% if selected_grade == grade.id|stringformat:"i" %}selected{% endif %}>
+                            {{ grade.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="flex space-x-2">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Filter
+                </button>
+                <a href="{% url 'attendance_sessions' %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <a href="{% url 'create_attendance_session' %}" class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow flex items-center">
+            <div class="rounded-full bg-blue-100 p-3 mr-4">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+            </div>
+            <div>
+                <h3 class="font-semibold text-gray-900">Create Session</h3>
+                <p class="text-sm text-gray-600">Create a new attendance session</p>
+            </div>
+        </a>
+        
+        <a href="{% url 'scan_attendance' %}" class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow flex items-center">
+            <div class="rounded-full bg-green-100 p-3 mr-4">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+                </svg>
+            </div>
+            <div>
+                <h3 class="font-semibold text-gray-900">Scan Attendance</h3>
+                <p class="text-sm text-gray-600">Scan QR codes to record attendance</p>
+            </div>
+        </a>
+        
+        <a href="{% url 'attendance_report' %}" class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow flex items-center">
+            <div class="rounded-full bg-purple-100 p-3 mr-4">
+                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+            </div>
+            <div>
+                <h3 class="font-semibold text-gray-900">Attendance Reports</h3>
+                <p class="text-sm text-gray-600">View and export attendance reports</p>
+            </div>
+        </a>
+    </div>
+    
+    <!-- Sessions List -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="bg-blue-600 text-white p-4">
+            <h2 class="text-lg font-semibold">Your Attendance Sessions</h2>
+        </div>
+        
+        {% if sessions %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Date
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Period
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Grade
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Attendance
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for session in sessions %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ session.date|date:"M d, Y" }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ session.get_period_display }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ session.grade.name }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {% if session.is_active %}
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            Active
+                                        </span>
+                                    {% else %}
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                            Closed
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ session.attendances.count }} records
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <a href="{% url 'attendance_session_detail' session.id %}" class="text-blue-600 hover:text-blue-900 mr-3">View</a>
+                                    {% if session.is_active %}
+                                        <a href="{% url 'scan_attendance' %}?session={{ session.id }}" class="text-green-600 hover:text-green-900">Scan</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-8">
+                <p class="text-gray-500">No attendance sessions found.</p>
+                {% if selected_date or selected_grade %}
+                    <a href="{% url 'attendance_sessions' %}" class="mt-2 inline-block text-blue-600 hover:text-blue-800">Clear filters</a>
+                {% else %}
+                    <a href="{% url 'create_attendance_session' %}" class="mt-2 inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Create Your First Session
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

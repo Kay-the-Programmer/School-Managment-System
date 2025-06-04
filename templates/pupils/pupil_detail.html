@@ -1,0 +1,300 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{{ pupil.get_full_name }} - School Management System{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <!-- Breadcrumb -->
+    <nav class="mb-4 text-sm">
+        <ol class="list-none p-0 inline-flex">
+            <li class="flex items-center">
+                <a href="{% url 'pupil_list' %}" class="text-blue-600 hover:text-blue-800">Pupils</a>
+                <svg class="w-3 h-3 mx-2 fill-current text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+                    <path d="M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"></path>
+                </svg>
+            </li>
+            <li>{{ pupil.get_full_name }}</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">Pupil Details</h1>
+        <div class="flex space-x-2">
+            {% if user.is_admin %}
+            <a href="{% url 'admin:pupils_pupil_change' pupil.id %}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Edit Pupil
+            </a>
+            {% endif %}
+            <a href="{% url 'pupil_list' %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
+                Back to List
+            </a>
+        </div>
+    </div>
+
+    <!-- Pupil Information -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div class="bg-blue-600 text-white p-4">
+            <h2 class="text-lg font-semibold">Pupil Information</h2>
+        </div>
+        <div class="p-6">
+            <div class="flex flex-col md:flex-row">
+                <!-- Left Column: Photo and QR Code -->
+                <div class="md:w-1/3 mb-6 md:mb-0 flex flex-col items-center">
+                    <!-- Photo -->
+                    {% if pupil.photo %}
+                        <img src="{{ pupil.photo.url }}" alt="{{ pupil.get_full_name }}" class="w-48 h-48 object-cover rounded-lg border-4 border-blue-600 mb-4">
+                    {% else %}
+                        <div class="w-48 h-48 rounded-lg bg-gray-300 flex items-center justify-center border-4 border-blue-600 mb-4">
+                            <span class="text-4xl text-gray-600">{{ pupil.first_name|first|upper }}{{ pupil.last_name|first|upper }}</span>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- QR Code -->
+                    <div class="mt-4 text-center">
+                        <h3 class="text-lg font-semibold mb-2">Attendance QR Code</h3>
+                        {% if pupil.qr_code %}
+                            <img src="{{ pupil.qr_code.url }}" alt="QR Code" class="w-48 h-48 mx-auto mb-2">
+                            <a href="{{ pupil.qr_code.url }}" download class="text-blue-600 hover:text-blue-800 block mb-2">
+                                Download QR Code
+                            </a>
+                        {% else %}
+                            <div class="bg-gray-200 w-48 h-48 flex items-center justify-center mx-auto mb-2">
+                                <span class="text-gray-500">No QR code available</span>
+                            </div>
+                        {% endif %}
+                        
+                        {% if user.is_teacher or user.is_admin %}
+                            <a href="{% url 'generate_qr_code' pupil.id %}" class="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-3 rounded text-sm">
+                                Regenerate QR Code
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Right Column: Details -->
+                <div class="md:w-2/3 md:pl-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500">Student ID</h3>
+                            <p class="mt-1 text-lg text-gray-900">{{ pupil.student_id }}</p>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500">Full Name</h3>
+                            <p class="mt-1 text-lg text-gray-900">{{ pupil.get_full_name }}</p>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500">Date of Birth</h3>
+                            <p class="mt-1 text-lg text-gray-900">{{ pupil.date_of_birth|date:"F j, Y" }}</p>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500">Gender</h3>
+                            <p class="mt-1 text-lg text-gray-900">{{ pupil.get_gender_display }}</p>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500">Grade</h3>
+                            <p class="mt-1 text-lg text-gray-900">{{ pupil.grade.name|default:"Not Assigned" }}</p>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500">Enrollment Date</h3>
+                            <p class="mt-1 text-lg text-gray-900">{{ pupil.enrollment_date|date:"F j, Y" }}</p>
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <h3 class="text-sm font-medium text-gray-500">Address</h3>
+                            <p class="mt-1 text-lg text-gray-900">
+                                {% if pupil.address %}
+                                    {{ pupil.address }}{% if pupil.city %}, {{ pupil.city }}{% endif %}
+                                    {% if pupil.state_province %}, {{ pupil.state_province }}{% endif %}
+                                    {% if pupil.postal_code %}, {{ pupil.postal_code }}{% endif %}
+                                    {% if pupil.country %}, {{ pupil.country }}{% endif %}
+                                {% else %}
+                                    Not provided
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <h3 class="text-lg font-semibold mb-2">Parent/Guardian Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-500">Parent Name</h3>
+                                <p class="mt-1 text-lg text-gray-900">{{ pupil.parent_name }}</p>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-500">Parent Phone</h3>
+                                <p class="mt-1 text-lg text-gray-900">{{ pupil.parent_phone }}</p>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-500">Parent Email</h3>
+                                <p class="mt-1 text-lg text-gray-900">{{ pupil.parent_email|default:"Not provided" }}</p>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-500">Emergency Contact</h3>
+                                <p class="mt-1 text-lg text-gray-900">
+                                    {% if pupil.emergency_contact_name %}
+                                        {{ pupil.emergency_contact_name }} ({{ pupil.emergency_contact_phone }})
+                                    {% else %}
+                                        Not provided
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Attendance -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div class="bg-green-600 text-white p-4">
+            <h2 class="text-lg font-semibold">Recent Attendance</h2>
+        </div>
+        <div class="p-6">
+            {% if attendances %}
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Date
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Session
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Status
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Recorded By
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Time
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for attendance in attendances %}
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ attendance.session.date|date:"M d, Y" }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ attendance.session.get_period_display }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                            {% if attendance.status == 'PRESENT' %}bg-green-100 text-green-800
+                                            {% elif attendance.status == 'ABSENT' %}bg-red-100 text-red-800
+                                            {% elif attendance.status == 'LATE' %}bg-yellow-100 text-yellow-800
+                                            {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                            {{ attendance.get_status_display }}
+                                            {% if attendance.status == 'LATE' and attendance.minutes_late %}
+                                                ({{ attendance.minutes_late }} min)
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ attendance.recorded_by.get_full_name|default:attendance.recorded_by.username }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ attendance.timestamp|date:"H:i" }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4 text-gray-500">
+                    <p>No attendance records found for this pupil.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Recent Assessment Results -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="bg-purple-600 text-white p-4">
+            <h2 class="text-lg font-semibold">Recent Assessment Results</h2>
+        </div>
+        <div class="p-6">
+            {% if assessment_results %}
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Assessment
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Subject
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Score
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Percentage
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Grade
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for result in assessment_results %}
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ result.assessment.template.title }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ result.assessment.template.subject.name }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ result.score|default:"-" }} / {{ result.assessment.template.total_points }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {% if result.percentage %}
+                                            {{ result.percentage|floatformat:1 }}%
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        {% if result.grade_letter %}
+                                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                                {% if result.grade_letter == 'A' %}bg-green-100 text-green-800
+                                                {% elif result.grade_letter == 'B' %}bg-blue-100 text-blue-800
+                                                {% elif result.grade_letter == 'C' %}bg-yellow-100 text-yellow-800
+                                                {% elif result.grade_letter == 'D' %}bg-orange-100 text-orange-800
+                                                {% else %}bg-red-100 text-red-800{% endif %}">
+                                                {{ result.grade_letter }}
+                                            </span>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4 text-gray-500">
+                    <p>No assessment results found for this pupil.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

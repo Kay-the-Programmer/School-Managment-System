@@ -1,0 +1,99 @@
+{% extends 'base/base.html' %}
+
+{% block title %}My Profile - School Management System{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <div class="bg-blue-600 text-white py-4 px-6">
+            <h2 class="text-xl font-bold">My Profile</h2>
+        </div>
+        
+        <div class="p-6">
+            <div class="flex flex-col md:flex-row">
+                <!-- Profile Picture -->
+                <div class="md:w-1/3 mb-6 md:mb-0 flex flex-col items-center">
+                    {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="w-48 h-48 object-cover rounded-full border-4 border-blue-600">
+                    {% else %}
+                        <div class="w-48 h-48 rounded-full bg-gray-300 flex items-center justify-center border-4 border-blue-600">
+                            <span class="text-4xl text-gray-600">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</span>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mt-4 text-center">
+                        <h3 class="text-xl font-bold">{{ user.get_full_name }}</h3>
+                        <p class="text-gray-600">{{ user.get_role_display }}</p>
+                    </div>
+                </div>
+                
+                <!-- Profile Information -->
+                <div class="md:w-2/3 md:pl-6">
+                    {% if messages %}
+                        <div class="mb-4">
+                            {% for message in messages %}
+                                <div class="p-4 mb-2 {% if message.tags == 'error' %}bg-red-100 text-red-700{% elif message.tags == 'success' %}bg-green-100 text-green-700{% else %}bg-blue-100 text-blue-700{% endif %} rounded">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="id_first_name" class="block text-gray-700 text-sm font-bold mb-2">First Name:</label>
+                                <input type="text" name="first_name" id="id_first_name" value="{{ user.first_name }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            </div>
+                            
+                            <div>
+                                <label for="id_last_name" class="block text-gray-700 text-sm font-bold mb-2">Last Name:</label>
+                                <input type="text" name="last_name" id="id_last_name" value="{{ user.last_name }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            </div>
+                            
+                            <div>
+                                <label for="id_email" class="block text-gray-700 text-sm font-bold mb-2">Email:</label>
+                                <input type="email" name="email" id="id_email" value="{{ user.email }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            </div>
+                            
+                            <div>
+                                <label for="id_phone_number" class="block text-gray-700 text-sm font-bold mb-2">Phone Number:</label>
+                                <input type="text" name="phone_number" id="id_phone_number" value="{{ user.phone_number }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="id_address" class="block text-gray-700 text-sm font-bold mb-2">Address:</label>
+                            <textarea name="address" id="id_address" rows="3" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">{{ user.address }}</textarea>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label for="id_profile_picture" class="block text-gray-700 text-sm font-bold mb-2">Profile Picture:</label>
+                            <input type="file" name="profile_picture" id="id_profile_picture" class="w-full py-2">
+                            {% if user.profile_picture %}
+                                <div class="mt-2 text-sm text-gray-600">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="remove_picture" class="mr-2">
+                                        Remove current picture
+                                    </label>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                Update Profile
+                            </button>
+                            <a href="{% url 'password_change' %}" class="inline-block align-baseline font-bold text-sm text-blue-600 hover:text-blue-800">
+                                Change Password
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
