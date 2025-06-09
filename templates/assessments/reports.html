@@ -1,0 +1,93 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Assessment Reports{% endblock %}
+
+{% block content %}
+<div class="bg-white shadow-md rounded-lg p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Assessment Reports</h1>
+        <a href="{% url 'assessment_list' %}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded">
+            Back to Assessments
+        </a>
+    </div>
+
+    <div class="mb-8">
+        <p class="text-gray-700 mb-6">
+            Generate reports to analyze assessment performance across different dimensions.
+        </p>
+    </div>
+
+    <!-- Report Types -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Pupil Reports -->
+        <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
+            <h2 class="text-lg font-semibold mb-4 text-gray-700">Pupil Reports</h2>
+            <p class="text-gray-600 mb-4">
+                View assessment performance for individual pupils across all subjects.
+            </p>
+            <form action="{% url 'pupil_assessment_report' 0 %}" method="get" class="space-y-4">
+                <div>
+                    <label for="pupil_id" class="block text-sm font-medium text-gray-700 mb-1">Select Pupil</label>
+                    <select name="pupil_id" id="pupil_id" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" required>
+                        <option value="">Select a pupil</option>
+                        {% for grade in grades %}
+                            <optgroup label="{{ grade.name }}">
+                                {% for pupil in grade.pupil_set.all %}
+                                    <option value="{{ pupil.id }}">{{ pupil.get_full_name }}</option>
+                                {% endfor %}
+                            </optgroup>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Generate Report
+                </button>
+            </form>
+        </div>
+
+        <!-- Grade Reports -->
+        <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
+            <h2 class="text-lg font-semibold mb-4 text-gray-700">Grade Reports</h2>
+            <p class="text-gray-600 mb-4">
+                View assessment performance for an entire grade across all subjects.
+            </p>
+            <form action="{% url 'grade_assessment_report' 0 %}" method="get" class="space-y-4">
+                <div>
+                    <label for="grade_id" class="block text-sm font-medium text-gray-700 mb-1">Select Grade</label>
+                    <select name="grade_id" id="grade_id" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" required>
+                        <option value="">Select a grade</option>
+                        {% for grade in grades %}
+                            <option value="{{ grade.id }}">{{ grade.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Generate Report
+                </button>
+            </form>
+        </div>
+
+        <!-- Subject Reports -->
+        <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
+            <h2 class="text-lg font-semibold mb-4 text-gray-700">Subject Reports</h2>
+            <p class="text-gray-600 mb-4">
+                View assessment performance for a specific subject across all grades.
+            </p>
+            <form action="{% url 'subject_assessment_report' 0 %}" method="get" class="space-y-4">
+                <div>
+                    <label for="subject_id" class="block text-sm font-medium text-gray-700 mb-1">Select Subject</label>
+                    <select name="subject_id" id="subject_id" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" required>
+                        <option value="">Select a subject</option>
+                        {% for subject in subjects %}
+                            <option value="{{ subject.id }}">{{ subject.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Generate Report
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

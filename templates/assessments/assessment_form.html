@@ -1,0 +1,104 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{% if assessment %}Edit Assessment{% else %}Create Assessment{% endif %}{% endblock %}
+
+{% block content %}
+<div class="bg-white shadow-md rounded-lg p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">
+            {% if assessment %}Edit Assessment{% else %}Create Assessment{% endif %}
+        </h1>
+        <a href="{% if assessment %}{% url 'assessment_detail' assessment.id %}{% else %}{% url 'assessment_list' %}{% endif %}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded">
+            {% if assessment %}Back to Details{% else %}Back to List{% endif %}
+        </a>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+        
+        <!-- Template Selection -->
+        <div>
+            <label for="template" class="block text-sm font-medium text-gray-700 mb-1">Assessment Template *</label>
+            <select name="template" id="template" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" required>
+                <option value="">Select a template</option>
+                {% for template in templates %}
+                    <option value="{{ template.id }}" {% if assessment and assessment.template.id == template.id %}selected{% endif %}>
+                        {{ template.subject.name }} - {{ template.assessment_type.name }} - {{ template.name }}
+                    </option>
+                {% endfor %}
+            </select>
+            <p class="mt-1 text-sm text-gray-500">Select the assessment template to use</p>
+        </div>
+        
+        <!-- Grade Selection -->
+        <div>
+            <label for="grade" class="block text-sm font-medium text-gray-700 mb-1">Grade/Class *</label>
+            <select name="grade" id="grade" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" required>
+                <option value="">Select a grade</option>
+                {% for grade in grades %}
+                    <option value="{{ grade.id }}" {% if assessment and assessment.grade_class.id == grade.id %}selected{% endif %}>
+                        {{ grade.name }}
+                    </option>
+                {% endfor %}
+            </select>
+            <p class="mt-1 text-sm text-gray-500">Select the grade/class for this assessment</p>
+        </div>
+        
+        <!-- Date Assigned -->
+        <div>
+            <label for="date_assigned" class="block text-sm font-medium text-gray-700 mb-1">Date Assigned *</label>
+            <input type="date" name="date_assigned" id="date_assigned" 
+                   value="{% if assessment %}{{ assessment.date_assigned|date:'Y-m-d' }}{% endif %}"
+                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" required>
+            <p class="mt-1 text-sm text-gray-500">The date when the assessment is assigned</p>
+        </div>
+        
+        <!-- Date Due -->
+        <div>
+            <label for="date_due" class="block text-sm font-medium text-gray-700 mb-1">Due Date *</label>
+            <input type="date" name="date_due" id="date_due" 
+                   value="{% if assessment %}{{ assessment.date_due|date:'Y-m-d' }}{% endif %}"
+                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" required>
+            <p class="mt-1 text-sm text-gray-500">The deadline for submitting the assessment</p>
+        </div>
+        
+        <!-- Instructions -->
+        <div>
+            <label for="instructions" class="block text-sm font-medium text-gray-700 mb-1">Instructions</label>
+            <textarea name="instructions" id="instructions" rows="5" 
+                      class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">{% if assessment %}{{ assessment.instructions }}{% endif %}</textarea>
+            <p class="mt-1 text-sm text-gray-500">Provide detailed instructions for the assessment</p>
+        </div>
+        
+        <!-- Attachment -->
+        <div>
+            <label for="attachment" class="block text-sm font-medium text-gray-700 mb-1">Attachment</label>
+            <input type="file" name="attachment" id="attachment" 
+                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+            <p class="mt-1 text-sm text-gray-500">Upload any supporting documents (optional)</p>
+            
+            {% if assessment and assessment.attachment %}
+                <div class="mt-2 flex items-center">
+                    <span class="text-sm text-gray-500 mr-2">Current file:</span>
+                    <a href="{{ assessment.attachment.url }}" class="text-blue-600 hover:text-blue-800 text-sm" target="_blank">
+                        {{ assessment.attachment.name|slice:"12:" }}
+                    </a>
+                    <div class="ml-4">
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" name="remove_attachment" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-600">Remove current file</span>
+                        </label>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Submit Button -->
+        <div class="flex justify-end">
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded">
+                {% if assessment %}Update Assessment{% else %}Create Assessment{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

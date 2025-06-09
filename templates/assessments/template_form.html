@@ -1,0 +1,100 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{% if template %}Edit Assessment Template{% else %}Create Assessment Template{% endif %}{% endblock %}
+
+{% block content %}
+<div class="bg-white shadow-md rounded-lg p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">
+            {% if template %}Edit Assessment Template{% else %}Create Assessment Template{% endif %}
+        </h1>
+        <a href="{% if template %}{% url 'assessment_template_detail' template.id %}{% else %}{% url 'assessment_template_list' %}{% endif %}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded">
+            {% if template %}Back to Details{% else %}Back to List{% endif %}
+        </a>
+    </div>
+
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+        
+        <!-- Template Name -->
+        <div>
+            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Template Name *</label>
+            <input type="text" name="name" id="name" 
+                   value="{% if template %}{{ template.name }}{% endif %}"
+                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" required>
+            <p class="mt-1 text-sm text-gray-500">A descriptive name for this assessment template</p>
+        </div>
+        
+        <!-- Subject Selection -->
+        <div>
+            <label for="subject" class="block text-sm font-medium text-gray-700 mb-1">Subject *</label>
+            <select name="subject" id="subject" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" required>
+                <option value="">Select a subject</option>
+                {% for subject in subjects %}
+                    <option value="{{ subject.id }}" {% if template and template.subject.id == subject.id %}selected{% endif %}>
+                        {{ subject.name }}
+                    </option>
+                {% endfor %}
+            </select>
+            <p class="mt-1 text-sm text-gray-500">The subject this assessment is for</p>
+        </div>
+        
+        <!-- Assessment Type Selection -->
+        <div>
+            <label for="assessment_type" class="block text-sm font-medium text-gray-700 mb-1">Assessment Type *</label>
+            <select name="assessment_type" id="assessment_type" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" required>
+                <option value="">Select an assessment type</option>
+                {% for assessment_type in assessment_types %}
+                    <option value="{{ assessment_type.id }}" {% if template and template.assessment_type.id == assessment_type.id %}selected{% endif %}>
+                        {{ assessment_type.name }}
+                    </option>
+                {% endfor %}
+            </select>
+            <p class="mt-1 text-sm text-gray-500">The type of assessment (e.g., Quiz, Test, Exam)</p>
+        </div>
+        
+        <!-- Description -->
+        <div>
+            <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <textarea name="description" id="description" rows="3" 
+                      class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">{% if template %}{{ template.description }}{% endif %}</textarea>
+            <p class="mt-1 text-sm text-gray-500">A brief description of this assessment template</p>
+        </div>
+        
+        <!-- Max Score -->
+        <div>
+            <label for="max_score" class="block text-sm font-medium text-gray-700 mb-1">Maximum Score *</label>
+            <input type="number" name="max_score" id="max_score" 
+                   value="{% if template %}{{ template.max_score }}{% endif %}"
+                   min="1" step="1"
+                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" required>
+            <p class="mt-1 text-sm text-gray-500">The maximum possible score for this assessment</p>
+        </div>
+        
+        <!-- Duration -->
+        <div>
+            <label for="duration" class="block text-sm font-medium text-gray-700 mb-1">Duration (minutes)</label>
+            <input type="number" name="duration" id="duration" 
+                   value="{% if template %}{{ template.duration }}{% endif %}"
+                   min="1" step="1"
+                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+            <p class="mt-1 text-sm text-gray-500">The recommended time to complete this assessment (optional)</p>
+        </div>
+        
+        <!-- Instructions -->
+        <div>
+            <label for="instructions" class="block text-sm font-medium text-gray-700 mb-1">Default Instructions</label>
+            <textarea name="instructions" id="instructions" rows="5" 
+                      class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">{% if template %}{{ template.instructions }}{% endif %}</textarea>
+            <p class="mt-1 text-sm text-gray-500">Default instructions to include when creating assessments from this template</p>
+        </div>
+        
+        <!-- Submit Button -->
+        <div class="flex justify-end">
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded">
+                {% if template %}Update Template{% else %}Create Template{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

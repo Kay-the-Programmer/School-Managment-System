@@ -1,0 +1,152 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Assessment Results{% endblock %}
+
+{% block content %}
+<div class="bg-white shadow-md rounded-lg p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Assessment Results</h1>
+        <div class="flex space-x-2">
+            <a href="{% url 'assessment_detail' assessment.id %}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded">
+                Back to Assessment
+            </a>
+            <a href="{% url 'grade_assessment' assessment.id %}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Grade Submissions
+            </a>
+            <a href="{% url 'export_assessment_results' assessment.id %}" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                Export Results
+            </a>
+        </div>
+    </div>
+
+    <!-- Assessment Information -->
+    <div class="mb-6 bg-gray-50 p-4 rounded-lg">
+        <h2 class="text-lg font-semibold mb-3">Assessment Information</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <span class="text-sm font-medium text-gray-500">Subject:</span>
+                <span class="ml-2 text-gray-900">{{ assessment.template.subject.name }}</span>
+            </div>
+            <div>
+                <span class="text-sm font-medium text-gray-500">Grade:</span>
+                <span class="ml-2 text-gray-900">{{ assessment.grade_class.name }}</span>
+            </div>
+            <div>
+                <span class="text-sm font-medium text-gray-500">Assessment Type:</span>
+                <span class="ml-2 text-gray-900">{{ assessment.template.assessment_type.name }}</span>
+            </div>
+            <div>
+                <span class="text-sm font-medium text-gray-500">Date Assigned:</span>
+                <span class="ml-2 text-gray-900">{{ assessment.date_assigned|date:"F d, Y" }}</span>
+            </div>
+            <div>
+                <span class="text-sm font-medium text-gray-500">Due Date:</span>
+                <span class="ml-2 text-gray-900">{{ assessment.date_due|date:"F d, Y" }}</span>
+            </div>
+            <div>
+                <span class="text-sm font-medium text-gray-500">Max Score:</span>
+                <span class="ml-2 text-gray-900">{{ assessment.template.max_score }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="mb-6">
+        <h2 class="text-lg font-semibold mb-3">Filter Results</h2>
+        <form method="get" class="flex flex-wrap gap-4">
+            <div>
+                <select name="status" id="status" class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                    <option value="">All Results</option>
+                    <option value="submitted" {% if selected_status == 'submitted' %}selected{% endif %}>Submitted</option>
+                    <option value="not_submitted" {% if selected_status == 'not_submitted' %}selected{% endif %}>Not Submitted</option>
+                    <option value="graded" {% if selected_status == 'graded' %}selected{% endif %}>Graded</option>
+                    <option value="not_graded" {% if selected_status == 'not_graded' %}selected{% endif %}>Submitted but Not Graded</option>
+                </select>
+            </div>
+            <button type="submit" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded">
+                Apply Filter
+            </button>
+        </form>
+    </div>
+
+    <!-- Results Table -->
+    {% if results %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pupil</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submission Date</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Percentage</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Graded By</th>
+                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for result in results %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 px-4 text-sm">{{ result.pupil.get_full_name }}</td>
+                            <td class="py-3 px-4 text-sm">
+                                {% if result.is_submitted %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        Submitted
+                                    </span>
+                                {% else %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                        Not Submitted
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-4 text-sm">
+                                {% if result.submitted_at %}
+                                    {{ result.submitted_at|date:"M d, Y H:i" }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-4 text-sm">
+                                {% if result.score is not None %}
+                                    {{ result.score|floatformat:1 }} / {{ assessment.template.max_score }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-4 text-sm">
+                                {% if result.percentage is not None %}
+                                    {{ result.percentage|floatformat:1 }}%
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-4 text-sm">
+                                {% if result.grade %}
+                                    {{ result.grade }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-4 text-sm">
+                                {% if result.graded_by %}
+                                    {{ result.graded_by.get_full_name }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-4 text-sm">
+                                <a href="{% url 'assessment_result_detail' result.id %}" class="text-blue-600 hover:text-blue-900">View</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-8 bg-gray-50 rounded-lg">
+            <p class="text-gray-500">No results found matching the selected criteria.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

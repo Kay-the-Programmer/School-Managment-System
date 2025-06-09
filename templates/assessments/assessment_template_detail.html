@@ -1,0 +1,153 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Assessment Template Details{% endblock %}
+
+{% block content %}
+<div class="bg-white shadow-md rounded-lg p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Assessment Template Details</h1>
+        <div class="flex space-x-2">
+            <a href="{% url 'assessment_template_list' %}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded">
+                Back to List
+            </a>
+            <a href="{% url 'edit_assessment_template' template.id %}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Edit
+            </a>
+            <a href="{% url 'create_assessment' %}?template={{ template.id }}" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                Create Assessment
+            </a>
+        </div>
+    </div>
+
+    <!-- Template Information -->
+    <div class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+            <h2 class="text-lg font-semibold mb-4 text-gray-700">Basic Information</h2>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <div class="grid grid-cols-1 gap-3">
+                    <div>
+                        <span class="text-sm font-medium text-gray-500">Template Name:</span>
+                        <span class="ml-2 text-gray-900">{{ template.name }}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-500">Subject:</span>
+                        <span class="ml-2 text-gray-900">{{ template.subject.name }}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-500">Assessment Type:</span>
+                        <span class="ml-2 text-gray-900">{{ template.assessment_type.name }}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-500">Maximum Score:</span>
+                        <span class="ml-2 text-gray-900">{{ template.max_score }}</span>
+                    </div>
+                    {% if template.duration %}
+                    <div>
+                        <span class="text-sm font-medium text-gray-500">Duration:</span>
+                        <span class="ml-2 text-gray-900">{{ template.duration }} minutes</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <h2 class="text-lg font-semibold mb-4 text-gray-700">Additional Information</h2>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <div class="grid grid-cols-1 gap-3">
+                    <div>
+                        <span class="text-sm font-medium text-gray-500">Created By:</span>
+                        <span class="ml-2 text-gray-900">{{ template.created_by.get_full_name }}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-500">Created At:</span>
+                        <span class="ml-2 text-gray-900">{{ template.created_at|date:"F d, Y" }}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-500">Last Updated:</span>
+                        <span class="ml-2 text-gray-900">{{ template.updated_at|date:"F d, Y" }}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-500">Assessments Created:</span>
+                        <span class="ml-2 text-gray-900">{{ template.assessment_set.count }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Description -->
+    <div class="mb-8">
+        <h2 class="text-lg font-semibold mb-4 text-gray-700">Description</h2>
+        <div class="bg-gray-50 p-4 rounded-lg">
+            {% if template.description %}
+                <p class="text-gray-800 whitespace-pre-line">{{ template.description }}</p>
+            {% else %}
+                <p class="text-gray-500 italic">No description provided.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Default Instructions -->
+    <div class="mb-8">
+        <h2 class="text-lg font-semibold mb-4 text-gray-700">Default Instructions</h2>
+        <div class="bg-gray-50 p-4 rounded-lg">
+            {% if template.instructions %}
+                <p class="text-gray-800 whitespace-pre-line">{{ template.instructions }}</p>
+            {% else %}
+                <p class="text-gray-500 italic">No default instructions provided.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Assessments Created from this Template -->
+    <div>
+        <h2 class="text-lg font-semibold mb-4 text-gray-700">Assessments Created from this Template</h2>
+        {% if template.assessment_set.all %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
+                            <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Assigned</th>
+                            <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
+                            <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for assessment in template.assessment_set.all %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="py-3 px-4 text-sm">{{ assessment.grade_class.name }}</td>
+                                <td class="py-3 px-4 text-sm">{{ assessment.date_assigned|date:"M d, Y" }}</td>
+                                <td class="py-3 px-4 text-sm">{{ assessment.date_due|date:"M d, Y" }}</td>
+                                <td class="py-3 px-4 text-sm">
+                                    {% if assessment.is_published %}
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            Published
+                                        </span>
+                                    {% else %}
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                            Draft
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3 px-4 text-sm">
+                                    <a href="{% url 'assessment_detail' assessment.id %}" class="text-blue-600 hover:text-blue-900">View</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-8 bg-gray-50 rounded-lg">
+                <p class="text-gray-500">No assessments have been created from this template yet.</p>
+                <a href="{% url 'create_assessment' %}?template={{ template.id }}" class="mt-4 inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Create First Assessment
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

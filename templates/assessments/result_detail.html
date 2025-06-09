@@ -1,0 +1,174 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Assessment Result Detail{% endblock %}
+
+{% block content %}
+<div class="bg-white shadow-md rounded-lg p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Assessment Result Detail</h1>
+        <div class="flex space-x-2">
+            <a href="{% url 'assessment_results' result.assessment.id %}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded">
+                Back to Results
+            </a>
+        </div>
+    </div>
+
+    <!-- Assessment and Pupil Information -->
+    <div class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+            <h2 class="text-lg font-semibold mb-4 text-gray-700">Assessment Information</h2>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <div class="grid grid-cols-1 gap-3">
+                    <div>
+                        <span class="text-sm font-medium text-gray-500">Subject:</span>
+                        <span class="ml-2 text-gray-900">{{ result.assessment.template.subject.name }}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-500">Grade:</span>
+                        <span class="ml-2 text-gray-900">{{ result.assessment.grade_class.name }}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-500">Assessment Type:</span>
+                        <span class="ml-2 text-gray-900">{{ result.assessment.template.assessment_type.name }}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-500">Date Assigned:</span>
+                        <span class="ml-2 text-gray-900">{{ result.assessment.date_assigned|date:"F d, Y" }}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-500">Due Date:</span>
+                        <span class="ml-2 text-gray-900">{{ result.assessment.date_due|date:"F d, Y" }}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-500">Max Score:</span>
+                        <span class="ml-2 text-gray-900">{{ result.assessment.template.max_score }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <h2 class="text-lg font-semibold mb-4 text-gray-700">Pupil Information</h2>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <div class="grid grid-cols-1 gap-3">
+                    <div>
+                        <span class="text-sm font-medium text-gray-500">Name:</span>
+                        <span class="ml-2 text-gray-900">{{ result.pupil.get_full_name }}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-500">Grade:</span>
+                        <span class="ml-2 text-gray-900">{{ result.pupil.grade.name }}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-500">Student ID:</span>
+                        <span class="ml-2 text-gray-900">{{ result.pupil.student_id }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Information -->
+    <div class="mb-8">
+        <h2 class="text-lg font-semibold mb-4 text-gray-700">Result Information</h2>
+        <div class="bg-gray-50 p-4 rounded-lg">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 gap-3">
+                    <div>
+                        <span class="text-sm font-medium text-gray-500">Status:</span>
+                        <span class="ml-2">
+                            {% if result.is_submitted %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    Submitted
+                                </span>
+                            {% else %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                    Not Submitted
+                                </span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% if result.is_submitted %}
+                        <div>
+                            <span class="text-sm font-medium text-gray-500">Submitted At:</span>
+                            <span class="ml-2 text-gray-900">{{ result.submitted_at|date:"F d, Y H:i" }}</span>
+                        </div>
+                    {% endif %}
+                    {% if result.score is not None %}
+                        <div>
+                            <span class="text-sm font-medium text-gray-500">Score:</span>
+                            <span class="ml-2 text-gray-900">{{ result.score|floatformat:1 }} / {{ result.assessment.template.max_score }}</span>
+                        </div>
+                        <div>
+                            <span class="text-sm font-medium text-gray-500">Percentage:</span>
+                            <span class="ml-2 text-gray-900">{{ result.percentage|floatformat:1 }}%</span>
+                        </div>
+                        <div>
+                            <span class="text-sm font-medium text-gray-500">Grade:</span>
+                            <span class="ml-2 text-gray-900">{{ result.grade }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="grid grid-cols-1 gap-3">
+                    {% if result.score is not None %}
+                        <div>
+                            <span class="text-sm font-medium text-gray-500">Graded By:</span>
+                            <span class="ml-2 text-gray-900">{{ result.graded_by.get_full_name }}</span>
+                        </div>
+                        <div>
+                            <span class="text-sm font-medium text-gray-500">Graded At:</span>
+                            <span class="ml-2 text-gray-900">{{ result.graded_at|date:"F d, Y H:i" }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submission Content -->
+    {% if result.is_submitted %}
+        <div class="mb-8">
+            <h2 class="text-lg font-semibold mb-4 text-gray-700">Submission</h2>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                {% if result.submission_text %}
+                    <div class="mb-4">
+                        <h3 class="text-md font-medium mb-2 text-gray-700">Text Submission</h3>
+                        <div class="bg-white p-3 rounded border border-gray-200">
+                            <p class="text-gray-800 whitespace-pre-line">{{ result.submission_text }}</p>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                {% if result.submission_file %}
+                    <div>
+                        <h3 class="text-md font-medium mb-2 text-gray-700">File Submission</h3>
+                        <a href="{{ result.submission_file.url }}" class="text-blue-600 hover:text-blue-800 flex items-center" target="_blank">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                            Download Submission File
+                        </a>
+                    </div>
+                {% endif %}
+                
+                {% if not result.submission_text and not result.submission_file %}
+                    <p class="text-gray-500 italic">No submission content available.</p>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Feedback -->
+    <div>
+        <h2 class="text-lg font-semibold mb-4 text-gray-700">Feedback</h2>
+        <div class="bg-gray-50 p-4 rounded-lg">
+            {% if result.feedback %}
+                <p class="text-gray-800 whitespace-pre-line">{{ result.feedback }}</p>
+            {% else %}
+                <p class="text-gray-500 italic">No feedback provided yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -3,7 +3,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, PasswordResetView
 from django.urls import reverse_lazy
-from .models import User
 
 class CustomLoginView(LoginView):
     """Custom login view"""
@@ -12,7 +11,8 @@ class CustomLoginView(LoginView):
 
 class CustomLogoutView(LogoutView):
     """Custom logout view"""
-    next_page = 'login'
+    next_page = 'login' # This will be used for the redirect
+
 
 class CustomPasswordChangeView(PasswordChangeView):
     """Custom password change view"""
